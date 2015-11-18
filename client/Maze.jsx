@@ -22,8 +22,11 @@ Maze = React.createClass({
       this.hline(board, 0,39,i,'red');
       this.vline(board, 0,39,i,'red');
     }
+
     return {
-      board: board
+      board: board,
+      player: {x: 1, y:  3*Math.floor(Math.random()*13+1)-2}
+
     }
   },
 
@@ -40,7 +43,8 @@ Maze = React.createClass({
       this.c = 169;
 
 
-      this.timer = setInterval(this.tick, 10);
+      this.timer = setInterval(this.buildMaze, 10);
+      window.addEventListener('keydown', this.handleKeypress);
   },
   componentWillUnmount(){
 
@@ -48,9 +52,35 @@ Maze = React.createClass({
     // from the page and destroyed. We can clear the interval here:
 
     clearInterval(this.timer);
+    window.removeEventListener('keydown', this.handleKeypress);
 },
 
-tick() {
+handleKeypress(e) {
+  tx = this.state.player.x;
+  ty = this.state.player.y;
+  switch (e.keyCode) {
+    case 37:
+      tx--;
+      break;
+    case 39:
+      tx++;
+      break;
+    case 38:
+      ty--;
+      break;
+    case 40:
+      ty++;
+      break;
+    default:
+
+  }
+
+  if(tx >= 0 && ty >= 0 && tx <40 && ty < 40 && this.state.board[tx][ty] != 'red') {
+    this.setState({player: {x: tx, y: ty}});
+  }
+},
+
+buildMaze() {
 
     // This function is called every 50 ms. It updates the
     // elapsed counter. Calling setState causes the component to be re-rendered
@@ -119,10 +149,10 @@ tick() {
     }
   } else {
     console.log("Done");
+    for(var i = 0; i < this.m.length; i++) {
+      console.log(i + " = " + this.m[i]);
+    }
     clearInterval(this.timer);
-    this.x = 1;
-    this.y = Math.floor(Math.random()*13+1);
-    this.plot(t, 3*this.x-2, 3*this.y-2, 'green');
   }
 
   this.setState({board: t});
@@ -131,7 +161,10 @@ tick() {
 
   genCell(x,y) {
     color = this.state.board[x][y];
-    return (<rect x={x*10} y={y*10} width="10" height="10" style={{fill: color}} />);
+    if(x == this.state.player.x && y == this.state.player.y) {
+      color = 'green';
+    }
+    return (<rect key={x*40+y} x={x*10} y={y*10} width="10" height="10" style={{fill: color}} />);
   },
 
   genBoard () {
